@@ -15,7 +15,7 @@ export class UsersController {
     return { user: await this.usersService.signup(userSignUpDto) };
   }
 
-   @Post('signin')
+@Post('signin')
   async signin(@Body() userSignInDto: UserSignInDto): Promise<{
     accessToken: string;
     user: UserEntity;

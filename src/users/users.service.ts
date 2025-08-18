@@ -5,7 +5,8 @@ import { Repository } from 'typeorm';
 import { UserSignUpDto } from './dto/user-signup.dto';
 import { hash, compare } from 'bcrypt';
 import { UserSignInDto } from './dto/user-signin.dto';
-import { sign } from 'jsonwebtoken';
+import { sign, SignOptions } from 'jsonwebtoken';
+
 
 @Injectable()
 export class UsersService {
@@ -48,11 +49,13 @@ export class UsersService {
     return await this.usersRepository.findOneBy({ email });
   }
   
-   async accessToken(user: UserEntity): Promise<string> {
-    return sign(
-      { id: user.id, email: user.email },
-      process.env.ACCESS_TOKEN_SECRET_KEY ,
-      { expiresIn: process.env.ACCESS_TOKEN_EXPIRE_TIME },
-    );
-  }
+  async accessToken(user: UserEntity): Promise<string> {
+  return sign(
+    { id: user.id, email: user.email },
+    process.env.ACCESS_TOKEN_SECRET_KEY!,
+    { expiresIn: process.env.ACCESS_TOKEN_EXPIRE_TIME! } as SignOptions,
+  );
+}
+
+
 }
