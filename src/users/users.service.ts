@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './entities/user.entity';
 import { Repository } from 'typeorm';
@@ -43,6 +43,16 @@ export class UsersService {
     if (!matchPassword) throw new BadRequestException('Bad creadentials.');
     userExists.password = undefined;
     return userExists;
+  }
+
+   async findAll(): Promise<UserEntity[]> {
+    return await this.usersRepository.find();
+  }
+
+  async findOne(id: number): Promise<UserEntity> {
+    const user = await this.usersRepository.findOneBy({ id });
+    if (!user) throw new NotFoundException('user not found.');
+    return user;
   }
 
     async findUserByEmail(email: string) {

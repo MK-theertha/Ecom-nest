@@ -25,5 +25,17 @@ export class UsersController {
 
     return { accessToken, user };
   }
+
+ @Get('all')
+  async findAll(): Promise<UserEntity[]> {
+    return await this.usersService.findAll();
+  }
+
+  @Get('single/:id')
+  async findOne(@Param('id') id: string): Promise<UserEntity> {
+    return await this.usersService.findOne(+id);
+  }
  
 }
+
+
