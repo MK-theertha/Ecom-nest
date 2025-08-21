@@ -1,16 +1,20 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserEntity } from './entities/user.entity';
 import { Repository } from 'typeorm';
+import { UserEntity } from './entities/user.entity';
 import { UserSignUpDto } from './dto/user-signup.dto';
 import { hash, compare } from 'bcrypt';
 import { UserSignInDto } from './dto/user-signin.dto';
 import { sign, SignOptions } from 'jsonwebtoken';
-
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
-
   constructor(
     @InjectRepository(UserEntity)
     private usersRepository: Repository<UserEntity>,
@@ -22,11 +26,11 @@ export class UsersService {
     userSignUpDto.password = await hash(userSignUpDto.password, 10);
     let user = this.usersRepository.create(userSignUpDto);
     user = await this.usersRepository.save(user);
-    user.password = undefined;
+    delete user.password;
     return user;
   }
 
-   async signin(userSignInDto: UserSignInDto): Promise<UserEntity> {
+  async signin(userSignInDto: UserSignInDto): Promise<UserEntity> {
     const userExists = await this.usersRepository
       .createQueryBuilder('users')
       .addSelect('users.password')
@@ -34,18 +38,22 @@ export class UsersService {
       .getOne();
     if (!userExists || !userExists.password) {
       throw new BadRequestException('Bad credentials.');
-      }
+    }
 
     const matchPassword = await compare(
       userSignInDto.password,
       userExists.password,
     );
     if (!matchPassword) throw new BadRequestException('Bad creadentials.');
-    userExists.password = undefined;
+    delete userExists.password;
     return userExists;
   }
 
-   async findAll(): Promise<UserEntity[]> {
+  create(createUserDto: CreateUserDto) {
+    return 'This action adds a new user';
+  }
+
+  async findAll(): Promise<UserEntity[]> {
     return await this.usersRepository.find();
   }
 
@@ -55,17 +63,23 @@ export class UsersService {
     return user;
   }
 
-    async findUserByEmail(email: string) {
+  update(id: number, updateUserDto: UpdateUserDto) {
+    return `This action updates a #${id} user`;
+  }
+
+  remove(id: number) {
+    return `This action removes a #${id} user`;
+  }
+
+  async findUserByEmail(email: string) {
     return await this.usersRepository.findOneBy({ email });
   }
-  
+
   async accessToken(user: UserEntity): Promise<string> {
-  return sign(
-    { id: user.id, email: user.email },
-    process.env.ACCESS_TOKEN_SECRET_KEY!,
-    { expiresIn: process.env.ACCESS_TOKEN_EXPIRE_TIME! } as SignOptions,
-  );
-}
-
-
+    return sign(
+      { id: user.id, email: user.email },
+      process.env.ACCESS_TOKEN_SECRET_KEY!,
+      { expiresIn: process.env.ACCESS_TOKEN_EXPIRE_TIME! } as SignOptions,
+    );
+  }
 }
